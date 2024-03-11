@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:news_clone_app/screens/HomePage.dart';
-import 'package:news_clone_app/screens/ProfilePage.dart';
-import 'package:news_clone_app/screens/SearchPage.dart';
+import 'package:news_clone_app/screens/home_page.dart';
+import 'package:news_clone_app/screens/profile_page.dart';
+import 'package:news_clone_app/screens/search_page.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
