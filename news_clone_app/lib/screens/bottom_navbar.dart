@@ -13,9 +13,9 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   int _index = 0;
   List pages = [
-    HomePage(),
-    SearchPage(),
-    ProfilePage(),
+    const HomePage(),
+    const SearchPage(),
+    const ProfilePage(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -25,10 +25,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
         showSelectedLabels: false,
         showUnselectedLabels: false,
         currentIndex: _index,
-        selectedLabelStyle: TextStyle(
+        selectedLabelStyle: const TextStyle(
           color: Colors.black,
         ),
-        unselectedLabelStyle: TextStyle(
+        unselectedLabelStyle: const TextStyle(
           color: Colors.transparent,
         ),
         selectedItemColor: Colors.black,
@@ -56,7 +56,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           ),
           BottomNavigationBarItem(
             activeIcon: Icon(
-              Icons.search,
+              Icons.search_outlined,
               color: Colors.black,
               size: 30,
             ),
