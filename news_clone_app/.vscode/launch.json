@@ -10,7 +10,7 @@
             "name": "news_clone_app (profile mode)",
             "request": "launch",
             "type": "dart",
-            "flutterMode": "profile"
+            "flutterMode": "debug"
         },
    
     ]

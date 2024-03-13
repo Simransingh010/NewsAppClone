@@ -12,16 +12,19 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     Article article = Article.articles[0];
     return Scaffold(
+      drawer: const Drawer(),
       appBar: AppBar(
         toolbarHeight: 100,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () {},
-          icon: const Icon(
-            Icons.menu,
-            size: 30,
-            color: Colors.white,
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            icon: const Icon(
+              Icons.menu,
+              size: 30,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

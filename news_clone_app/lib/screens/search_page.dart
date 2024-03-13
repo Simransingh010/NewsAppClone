@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:news_clone_app/models/article_model.dart';
+import 'package:news_clone_app/screens/profile_page.dart';
 import 'package:news_clone_app/widgets/image_container.dart';
 // import 'package:news_clone_app/screens/BottomNavbar1.dart';
 
@@ -87,65 +88,76 @@ class _CategoryNews extends StatelessWidget {
                       scrollDirection: Axis.vertical,
                       itemCount: articles.length,
                       itemBuilder: (context, index) {
-                        return Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: ImageContainer(
-                                width: 80,
-                                height: 80,
-                                imageUrl: articles[index].imageUrl,
+                        return InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              ProfilePage.routeName,
+                              arguments: articles[index],
+                            );
+                          },
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: ImageContainer(
+                                  width: 80,
+                                  height: 80,
+                                  imageUrl: articles[index].imageUrl,
+                                ),
                               ),
-                            ),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    articles[index].title,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.clip,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .copyWith(
-                                          fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      articles[index].title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.clip,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.schedule,
+                                          size: 18,
                                         ),
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.schedule,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(
-                                        width: 5,
-                                      ),
-                                      Text(
-                                          '${DateTime.now().difference(articles[index].createdAt).inHours} Hours Ago',
-                                          style: const TextStyle(fontSize: 12)),
-                                      const SizedBox(
-                                        width: 45,
-                                      ),
-                                      const Icon(
-                                        Icons.visibility,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(
-                                        width: 3,
-                                      ),
-                                      Text('${articles[index].views} views',
-                                          style: const TextStyle(fontSize: 12))
-                                    ],
-                                  )
-                                ],
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                            '${DateTime.now().difference(articles[index].createdAt).inHours} Hours Ago',
+                                            style:
+                                                const TextStyle(fontSize: 12)),
+                                        const SizedBox(
+                                          width: 45,
+                                        ),
+                                        const Icon(
+                                          Icons.visibility,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(
+                                          width: 3,
+                                        ),
+                                        Text('${articles[index].views} views',
+                                            style:
+                                                const TextStyle(fontSize: 12))
+                                      ],
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         );
                       },
                     ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_clone_app/screens/home_page.dart';
-import 'package:news_clone_app/screens/profile_page.dart';
+import 'package:news_clone_app/screens/profile_page1.dart';
 import 'package:news_clone_app/screens/search_page.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -15,7 +15,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   List pages = [
     const HomePage(),
     const SearchPage(),
-    const ProfilePage(),
+    const ProfilePage1(),
   ];
   @override
   Widget build(BuildContext context) {
