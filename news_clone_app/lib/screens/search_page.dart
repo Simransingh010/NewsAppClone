@@ -1,22 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:news_clone_app/models/article_model.dart';
+import 'dart:convert';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:news_clone_app/models/news_channel_headline.dart';
 import 'package:news_clone_app/screens/profile_page.dart';
 import 'package:news_clone_app/widgets/image_container.dart';
+import 'package:http/http.dart' as http;
 // import 'package:news_clone_app/screens/BottomNavbar1.dart';
 
-class SearchPage extends StatelessWidget {
-  const SearchPage({super.key});
-
+class SearchPage extends StatefulWidget {
+  SearchPage({super.key});
   static const routeName = '/Search';
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  final List<String> apiEndpoints = [
+    'https://newsapi.org/v2/top-headlines?country=in&category=general&apiKey=6504b7d828a445f1a9b293bc1a044b42',
+    'https://newsapi.org/v2/top-headlines?country=in&category=health&apiKey=6504b7d828a445f1a9b293bc1a044b42',
+    'https://newsapi.org/v2/top-headlines?country=in&category=entertainment&apiKey=6504b7d828a445f1a9b293bc1a044b42',
+    'https://newsapi.org/v2/top-headlines?country=in&category=sports&apiKey=6504b7d828a445f1a9b293bc1a044b42',
+    'https://newsapi.org/v2/top-headlines?country=in&category=science&apiKey=6504b7d828a445f1a9b293bc1a044b42',
+    'https://newsapi.org/v2/top-headlines?country=in&category=business&apiKey=6504b7d828a445f1a9b293bc1a044b42',
+  ];
+  Future<List<Articles>> fetchDataForTabs() async {
+    List<Articles> allArticles = [];
+
+    for (int i = 0; i < apiEndpoints.length; i++) {
+      String apiUrl = apiEndpoints[i];
+      http.Response response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> json = jsonDecode(response.body);
+        List<dynamic> body = json['articles'];
+        List<Articles> articles =
+            body.map((dynamic item) => Articles.fromJson(item)).toList();
+
+        // Add fetched articles to the list of all articles
+        allArticles.addAll(articles);
+      } else {
+        throw Exception('Failed to fetch articles');
+      }
+    }
+
+    // Return all fetched articles
+    return allArticles;
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> tabs = [
+      'General',
       'Health',
-      'Politics',
-      'Art',
-      'Food',
+      'Entertainment',
+      'Sports',
       'Science',
+      'Business'
     ];
 
     return DefaultTabController(
@@ -43,7 +83,10 @@ class SearchPage extends StatelessWidget {
           padding: const EdgeInsets.all(20.0),
           children: [
             const DiscoverNews(),
-            _CategoryNews(tabs: tabs),
+            CategoryNews(
+              tabs: tabs,
+              apiEndpoints: apiEndpoints,
+            ),
           ],
         ),
       ),
@@ -51,15 +94,37 @@ class SearchPage extends StatelessWidget {
   }
 }
 
-class _CategoryNews extends StatelessWidget {
-  const _CategoryNews({
-    super.key,
+class CategoryNews extends StatelessWidget {
+  const CategoryNews({
+    Key? key,
+    required this.apiEndpoints,
     required this.tabs,
-  });
+  }) : super(key: key);
+
+  final List<String> apiEndpoints;
   final List<String> tabs;
+
+  Future<List<Articles>> fetchDataForTab(String apiUrl) async {
+    http.Response response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> json = jsonDecode(response.body);
+      List<dynamic> body = json['articles'];
+      List<Articles> articles =
+          body.map((dynamic item) => Articles.fromJson(item)).toList();
+      return articles;
+    } else {
+      throw Exception('Failed to fetch articles');
+    }
+  }
+
+  String formatPublishedAt(String publishedAt) {
+    DateTime dateTime = DateTime.parse(publishedAt);
+    return timeago.format(dateTime);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final articles = Article.articles;
     return Column(
       children: [
         TabBar(
@@ -79,93 +144,60 @@ class _CategoryNews extends StatelessWidget {
               .toList(),
         ),
         SizedBox(
-          height: MediaQuery.of(context).size.height * 0.5,
-          child: SizedBox(
-            child: TabBarView(
-              children: tabs
-                  .map(
-                    (tab) => ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      itemCount: articles.length,
+          height: MediaQuery.of(context).size.height * 0.56,
+          child: TabBarView(
+            children: apiEndpoints.map((apiUrl) {
+              return FutureBuilder<List<Articles>>(
+                future: fetchDataForTab(apiUrl),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text('Error: ${snapshot.error}'),
+                    );
+                  } else {
+                    return ListView.builder(
+                      itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        return InkWell(
+                        final article = snapshot.data![index];
+                        return ListTile(
+                          leading: ImageContainer(
+                            imageUrl: snapshot.data![index].urlToImage ??
+                                "Not Available",
+                            width: 80,
+                            height: 80,
+                          ),
+                          title: Text(
+                            article.title ?? "Not Available",
+                            maxLines: 2,
+                            overflow: TextOverflow.clip,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(article.publishedAt != null
+                              ? formatPublishedAt(article.publishedAt!)
+                              : "Not Available"),
                           onTap: () {
                             Navigator.pushNamed(
                               context,
                               ProfilePage.routeName,
-                              arguments: articles[index],
+                              arguments: article,
                             );
                           },
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: ImageContainer(
-                                  width: 80,
-                                  height: 80,
-                                  imageUrl: articles[index].imageUrl,
-                                ),
-                              ),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      articles[index].title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.clip,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.schedule,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(
-                                          width: 5,
-                                        ),
-                                        Text(
-                                            '${DateTime.now().difference(articles[index].createdAt).inHours} Hours Ago',
-                                            style:
-                                                const TextStyle(fontSize: 12)),
-                                        const SizedBox(
-                                          width: 45,
-                                        ),
-                                        const Icon(
-                                          Icons.visibility,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(
-                                          width: 3,
-                                        ),
-                                        Text('${articles[index].views} views',
-                                            style:
-                                                const TextStyle(fontSize: 12))
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
                         );
                       },
-                    ),
-                  )
-                  .toList(),
-            ),
+                    );
+                  }
+                },
+              );
+            }).toList(),
           ),
-        )
+        ),
       ],
     );
   }

@@ -8,10 +8,16 @@ environment:
 
 dependencies:
   cupertino_icons: ^1.0.6
+  dio: ^5.4.1
   equatable: ^2.0.5
   flutter:
     sdk: flutter
+    asset: 
+    - asset/image/profilephoto.jpeg
   google_fonts: ^6.2.1
+  http: ^1.2.1
+  timeago: ^3.6.1
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:

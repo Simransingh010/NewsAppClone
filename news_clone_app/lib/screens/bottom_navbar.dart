@@ -14,8 +14,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
   int _index = 0;
   List pages = [
     const HomePage(),
-    const SearchPage(),
-    const ProfilePage1(),
+    SearchPage(),
+    const MyProfilePage(),
   ];
   @override
   Widget build(BuildContext context) {

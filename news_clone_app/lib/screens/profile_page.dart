@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:news_clone_app/models/article_model.dart';
+import 'package:news_clone_app/models/news_channel_headline.dart';
 import 'package:news_clone_app/widgets/custom_tag.dart';
 import 'package:news_clone_app/widgets/image_container.dart';
+import 'package:timeago/timeago.dart' as timeago;
 // import 'package:news_clone_app/screens/BottomNavbar1.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -11,10 +11,10 @@ class ProfilePage extends StatelessWidget {
   static String get routeName => '/Profile';
   @override
   Widget build(BuildContext context) {
-    final article = ModalRoute.of(context)!.settings.arguments as Article;
+    final article = ModalRoute.of(context)!.settings.arguments as Articles;
     return ImageContainer(
       width: double.infinity,
-      imageUrl: article.imageUrl,
+      imageUrl: article.urlToImage ?? " no data",
       child: Scaffold(
         extendBodyBehindAppBar: true,
         backgroundColor: Colors.transparent,
@@ -45,7 +45,12 @@ class NewsInfo extends StatelessWidget {
     required this.article,
   });
 
-  final Article article;
+  final Articles article;
+
+  String formatPublishedAt(String publishedAt) {
+    DateTime dateTime = DateTime.parse(publishedAt);
+    return timeago.format(dateTime);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,58 +64,43 @@ class NewsInfo extends StatelessWidget {
       child: Column(
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               CustomTag(backgroundColor: Colors.black, children: [
                 CircleAvatar(
                   radius: 10,
-                  backgroundImage: NetworkImage(article.authorImageUrl),
+                  backgroundImage:
+                      NetworkImage(article.urlToImage ?? " No Image"),
                 ),
                 const SizedBox(
-                  width: 10,
+                  width: 5,
                 ),
                 Text(
-                  article.author,
+                  article.author ?? "Not Given",
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                         color: Colors.white,
                       ),
                 ),
               ]),
               const SizedBox(
-                width: 20,
+                width: 15,
               ),
               CustomTag(
                 backgroundColor: Colors.grey.withAlpha(60),
                 children: [
                   Icon(
                     Icons.schedule,
-                    size: 10,
+                    size: 13,
                   ),
                   const SizedBox(
                     width: 10,
                   ),
                   Text(
-                    '${DateTime.now().difference(article.createdAt).inHours}h',
+                    article.publishedAt != null
+                        ? formatPublishedAt(article.publishedAt!)
+                        : "Not Available",
                     style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                           color: Colors.black,
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              CustomTag(
-                backgroundColor: Colors.grey.withAlpha(60),
-                children: [
-                  Icon(
-                    Icons.visibility,
-                    size: 10,
-                  ),
-                  Text(
-                    '${article.views}',
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400,
                         ),
                   ),
                 ],
@@ -121,7 +111,7 @@ class NewsInfo extends StatelessWidget {
             height: 20,
           ),
           Text(
-            article.title,
+            article.title ?? " Not Given",
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -131,7 +121,8 @@ class NewsInfo extends StatelessWidget {
             height: 20,
           ),
           Text(
-            article.body,
+            maxLines: 200,
+            article.description ?? " Not Given",
             style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                   color: Colors.black,
                   fontWeight: FontWeight.w200,
@@ -140,28 +131,12 @@ class NewsInfo extends StatelessWidget {
           const SizedBox(
             height: 20,
           ),
-          // GridView.builder(
-          //   shrinkWrap: true,
-          //   itemCount: 2,
-          //   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          //     crossAxisCount: 2,
-          //     childAspectRatio: 1.25,
-          //   ),
-          //   itemBuilder: (context, index) {
-          //     return Padding(
-          //       padding: const EdgeInsets.all(8.0),
-          //       child: ImageContainer(
-          //           imageUrl: article.imageUrl,
-          //           width: MediaQuery.of(context).size.width * 0.4),
-          //     );
-          //   },
-          // ),
           SizedBox(
             height: 150,
             child: ListView.builder(
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
-                itemCount: 5,
+                itemCount: 2,
                 itemBuilder: (context, index) {
                   return InkWell(
                     onTap: () {
@@ -178,7 +153,7 @@ class NewsInfo extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ImageContainer(
-                            imageUrl: article.imageUrl,
+                            imageUrl: article.urlToImage ?? "NOT AVAILABLE",
                             width: MediaQuery.of(context).size.width * 0.5,
                           ),
                           const SizedBox(
@@ -202,7 +177,7 @@ class _NewsHeadline extends StatelessWidget {
     super.key,
   });
 
-  final Article article;
+  final Articles article;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -214,22 +189,11 @@ class _NewsHeadline extends StatelessWidget {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.15,
           ),
-          CustomTag(
-            backgroundColor: Colors.grey.withAlpha(150),
-            children: [
-              Text(
-                article.category,
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      color: Colors.white,
-                    ),
-              ),
-            ],
-          ),
           const SizedBox(
             height: 10,
           ),
           Text(
-            article.title,
+            article.title ?? "NOT GIVEN",
             style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -240,7 +204,7 @@ class _NewsHeadline extends StatelessWidget {
             height: 10,
           ),
           Text(
-            article.subtitle,
+            article.author ?? " Not Given",
             style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                   color: Colors.white,
                 ),

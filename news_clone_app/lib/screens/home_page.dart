@@ -1,16 +1,32 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:news_clone_app/models/article_model.dart';
+
+import 'package:news_clone_app/apicalls.dart';
+
 import 'package:news_clone_app/screens/profile_page.dart';
 import 'package:news_clone_app/widgets/image_container.dart';
 import 'package:news_clone_app/widgets/news_of_the_day.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   static const routeName = '/';
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final Dio dio = Dio();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    Article article = Article.articles[0];
     return Scaffold(
       drawer: const Drawer(),
       appBar: AppBar(
@@ -31,12 +47,7 @@ class HomePage extends StatelessWidget {
       extendBodyBehindAppBar: true,
       body: ListView(
         padding: EdgeInsets.zero,
-        children: [
-          NewsOfTheDay(article: article),
-          BreakingNews(
-            articles: Article.articles,
-          )
-        ],
+        children: [NewsOfTheDay(), BreakingNews()],
       ),
     );
   }
@@ -45,10 +56,8 @@ class HomePage extends StatelessWidget {
 class BreakingNews extends StatelessWidget {
   const BreakingNews({
     super.key,
-    required this.articles,
   });
 
-  final List<Article> articles;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -74,62 +83,77 @@ class BreakingNews extends StatelessWidget {
           const SizedBox(
             height: 20,
           ),
-          SizedBox(
-            height: 250,
-            child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: articles.length,
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        ProfilePage.routeName,
-                        arguments: articles[index],
-                      );
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      margin: const EdgeInsets.only(right: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ImageContainer(
-                            imageUrl: articles[index].imageUrl,
+          FutureBuilder(
+            future: getArticle(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              } else {
+                return SizedBox(
+                  height: 250,
+                  child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              ProfilePage.routeName,
+                              arguments: snapshot.data![index],
+                            );
+                          },
+                          child: Container(
                             width: MediaQuery.of(context).size.width * 0.5,
+                            margin: const EdgeInsets.only(right: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ImageContainer(
+                                  imageUrl: snapshot.data![index].urlToImage ??
+                                      'NO IMAGE',
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  snapshot.data![index].title ?? 'NO TITLE',
+                                  maxLines: 2,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        height: 1.5,
+                                      ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  'By ${snapshot.data![index].author}',
+                                  style: Theme.of(context).textTheme.bodySmall!,
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            articles[index].title,
-                            maxLines: 2,
-                            style:
-                                Theme.of(context).textTheme.bodyLarge!.copyWith(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.5,
-                                    ),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            '${DateTime.now().difference(articles[index].createdAt).inHours} hours ago',
-                            style: Theme.of(context).textTheme.bodySmall!,
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            'By ${articles[index].author}',
-                            style: Theme.of(context).textTheme.bodySmall!,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
+                        );
+                      }),
+                );
+              }
+            },
           )
         ],
       ),

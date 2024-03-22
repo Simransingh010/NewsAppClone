@@ -26,7 +26,7 @@ class MainApp extends StatelessWidget {
       routes: {
         // HomePage.routeName: (context) => const HomePage(),
         ProfilePage.routeName: (context) => const ProfilePage(),
-        SearchPage.routeName: (context) => const SearchPage(),
+        SearchPage.routeName: (context) => SearchPage(),
       },
     );
   }
